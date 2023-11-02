@@ -4,8 +4,7 @@
 // @version      0.1
 // @description  Fucking monthly report
 // @author       You
-// @match        https://ezgroupware.bizmeka.com/groupware/approval/work/apprWorkDoc/createApprDocForm.do?topFormParentId=25842514&formParentId=25842514&formId=57830252&actionType=&sortColumn=&sortType=&linkType=&pageIndex=1&pagePerRecord=10&searchColumn=formName&searchWord=&pageIndex=1
-// @match        https://ezgroupware.bizmeka.com/groupware/approval/work/apprWorkDoc/updateApprDocForm.do?apprId=64044467&listType=tempList&entrustUserId=&linkType=&folderId=
+// @match        https://ezgroupware.bizmeka.com/groupware/approval/work/apprWorkDoc/createApprDocForm.do?topFormParentId=25842514&formParentId=25842514&formId=59733276&actionType=&sortColumn=&sortType=&linkType=&pageIndex=1&pagePerRecord=10&searchColumn=formName&searchWord=&pageIndex=1
 // @icon         https://www.google.com/s2/favicons?domain=bizmeka.com
 // @grant        none
 // @require http://code.jquery.com/jquery-3.4.1.min.js
@@ -29,13 +28,23 @@ const option = {
     document.getElementById("csv_uploader").addEventListener('change',function(e) {
         console.log("uploaded");
         upload(input.files.item(0) || e.target.files);
+        insertAccount();
     });
 })();
+
+function insertAccount() {
+    var acc = document.getElementById("multiTable1");
+    var acr = acc.rows;
+    var aci = acr.item(1).getElementsByTagName('td');
+    for(var j =0; j < 3; j++) {
+        aci.item(j).getElementsByTagName('input').item(0).value = '-';
+    }
+}
 
 
 function addCells(csv) {
     var count = csv.length;
-    for(var j =0; j < count; j++) {
+    for(var j =0; j < count+1; j++) {
 
         if(j > 1) {
             // Add button
@@ -45,19 +54,19 @@ function addCells(csv) {
             console.log(`Added ${j}th cells`);
             var element = cell.item(j).cells;
             var i = j-1;
-            /// date
-            element.item(0).getElementsByTagName('input').item(0).value = csv[i].date.replaceAll('-','.');
+            /// name
+            element.item(0).getElementsByTagName('input').item(0).value = csv[i].name;
             /// title
-            element.item(1).getElementsByTagName('input').item(0).value = csv[i].title;
+            element.item(1).getElementsByTagName('input').item(0).value = parseData(csv[i]);
             /// desc
-            element.item(2).getElementsByTagName('input').item(0).value = parseData(csv[i]);
-            /// card number
-            element.item(3).getElementsByTagName('input').item(0).value = csv[i].card;
+            element.item(2).getElementsByTagName('input').item(0).value = 1;
             /// cost
-            element.item(4).getElementsByTagName('input').item(0).value = parseInt(csv[i].cost).toLocaleString('ko-KR', option);
+            var costCell = element.item(3).getElementsByTagName('input').item(0);
+            costCell.value = parseInt(csv[i].cost);
+            costCell.dispatchEvent((new KeyboardEvent('keyup',{'key':13})));
+            element.item(4).getElementsByTagName('input').item(0).value = costCell.value;
             console.log(csv[i]);
-            var costCell = element.item(4).getElementsByTagName('input').item(0);
-            costCell.dispatchEvent((new KeyboardEvent('keyUp',{'key':'a'})))
+
         }
     }
 }
@@ -119,21 +128,9 @@ function upload(file) {
 }
 
 function parseData(data) {
-    switch(parseInt(data.type)) {
-        case 0:
-        case 1:
-            if(data.tip > 0){
-                return `${data.count}인 ${data.desc} \(배달비: ${data.tip.addComma()}원\)`;
-            } else {
-                return `${data.count}인 ${data.desc}`;
-            }
-        case 2:
-        case 3:
-        case 4:
-            return `${data.desc} ${data.count}인`;
-        case 5:
-            return `문구류 구매`;
-        default:
-            return `${data.desc}`;
-    }
+    var card = data.card;
+    if(card == "821") card = "0821";
+    var memo = '';
+    if(data.memo.length > 0) memo = `, ${data.memo}`;
+    return `${data.date} [${card}${memo}] ${data.type}`;
 }
