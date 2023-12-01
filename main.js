@@ -4,9 +4,8 @@
 // @version      0.1
 // @description  Fucking monthly report
 // @author       You
-// @match        https://ezgroupware.bizmeka.com/groupware/approval/work/apprWorkDoc/createApprDocForm.do?topFormParentId=25842514&formParentId=25842514&formId=59733276&actionType=&sortColumn=&sortType=&linkType=&pageIndex=1&pagePerRecord=10&searchColumn=formName&searchWord=&pageIndex=1
+// @match        https://ezgroupware.bizmeka.com/groupware/approval/work/apprWorkDoc/createApprDocForm.do?topFormParentId=91738339&formParentId=91738339&formId=92263467&actionType=&sortColumn=&sortType=&linkType=&pageIndex=1&pagePerRecord=10&searchColumn=formName&searchWord=&pageIndex=1
 // @icon         https://www.google.com/s2/favicons?domain=bizmeka.com
-// @grant        none
 // @require http://code.jquery.com/jquery-3.4.1.min.js
 
 // ==/UserScript==
@@ -54,20 +53,35 @@ function addCells(csv) {
             console.log(`Added ${j}th cells`);
             var element = cell.item(j).cells;
             var i = j-1;
+            /// date
+            element.item(0).getElementsByTagName('input').item(0).value = csv[i].date;
             /// name
-            element.item(0).getElementsByTagName('input').item(0).value = csv[i].name;
-            /// title
-            element.item(1).getElementsByTagName('input').item(0).value = parseData(csv[i]);
-            /// desc
-            element.item(2).getElementsByTagName('input').item(0).value = 1;
-            /// cost
-            var costCell = element.item(3).getElementsByTagName('input').item(0);
+            element.item(1).getElementsByTagName('input').item(0).value = csv[i].name;
+            /// description
+            element.item(2).getElementsByTagName('input').item(0).value = csv[i].type;
+            /// card
+            element.item(3).getElementsByTagName('input').item(0).value = appendZero(csv[i].card);
+            /// price
+//            element.item(4).getElementsByTagName('input').item(0).value = parseInt(csv[i].cost);
+            console.log(csv[i].name + ': '+csv[i].cost);
+             var costCell = element.item(4).getElementsByTagName('input').item(0);
             costCell.value = parseInt(csv[i].cost);
             costCell.dispatchEvent((new KeyboardEvent('keyup',{'key':13})));
             element.item(4).getElementsByTagName('input').item(0).value = costCell.value;
-            console.log(csv[i]);
+            if(j == count) {
+                costCell.dispatchEvent((new KeyboardEvent('keyup',{'key':32})));
+                console.log('last');
+            }
 
         }
+    }
+}
+
+function appendZero(number) {
+    if(number.length == 3) {
+        return `0${number}`;
+    } else {
+        return number;
     }
 }
 
@@ -132,5 +146,5 @@ function parseData(data) {
     if(card == "821") card = "0821";
     var memo = '';
     if(data.memo.length > 0) memo = `, ${data.memo}`;
-    return `${data.date} [${card}${memo}] ${data.type}`;
+    return `[${data.memo}] ${data.name}`;
 }
