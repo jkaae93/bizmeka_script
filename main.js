@@ -58,7 +58,7 @@ function addCells(csv) {
             /// name
             element.item(1).getElementsByTagName('input').item(0).value = csv[i].name;
             /// description
-            element.item(2).getElementsByTagName('input').item(0).value = csv[i].type;
+            element.item(2).getElementsByTagName('input').item(0).value = parseData(csv[i]);
             /// card
             element.item(3).getElementsByTagName('input').item(0).value = appendZero(csv[i].card);
             /// price
@@ -142,9 +142,6 @@ function upload(file) {
 }
 
 function parseData(data) {
-    var card = data.card;
-    if(card == "821") card = "0821";
-    var memo = '';
-    if(data.memo.length > 0) memo = `, ${data.memo}`;
-    return `[${data.memo}] ${data.name}`;
+    if(data.memo.length > 1) return `[${data.memo}: ] ${data.type}`;
+    return `${data.type}`;
 }
